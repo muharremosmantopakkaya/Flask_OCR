@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Çevrimiçi OCR</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        text-align: center;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .form-control-file {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .btn-primary {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        font-size: 1.25rem;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: .25rem;
+        cursor: pointer;
+        transition: background-color .3s;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    #result {
+        text-align: center;
+        margin-top: 20px;
+    }
+    #detected-text {
+        margin-top: 20px;
+        text-align: center;
+    }
+    #detected-text h3 {
+        color: #333;
+    }
+    #detected-text ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    #detected-text li {
+        background-color: #f8f9fa;
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: left;
+    }
+    #audio-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .progress {
+        height: 20px;
+        display: none; /* Başlangıçta gizli olacak */
+    }
+    .progress-bar {
+        line-height: 20px;
+    }
+    #imagePreview img {
+        max-width: 100%;
+        height: auto;
+    }
+    #copyText {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        margin-top: 20px;
+    }
+    #drop-zone {
+        border: 2px dashed #007bff;
+        padding: 20px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        transition: background-color .3s;
+    }
+    #drop-zone.hover {
+        border-color: #0056b3;
+        background-color: #e9ecef;
+    }
+    #drop-zone p {
+        margin: 0;
+        font-size: 16px;
+        color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="mt-3 mb-4">Çevrimiçi OCR</h1>
+        <p>Çevrimiçi OCR dönüştürücüyü kullanarak görüntüyü düzenlenebilir metne dönüştürün.</p>
+        <form id="uploadForm" method="post" action="/upload" enctype="multipart/form-data">
+          <div id="drop-zone">
+            <p>Dosyalarınızı buraya sürükleyip bırakın veya tıklayarak yükleyin</p>
+            <input type="file" class="form-control-file" id="file" name="file" multiple required hidden>
+          </div>
+          <div id="imagePreview" class="mt-3"></div>
+          <div class="form-group">
+            <label for="language">Dil Seçin</label>
+            <select id="language" name="language" class="form-control">
+                <option value="tr">Türkçe</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <!-- Diğer diller -->
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Yükle</button>
+        </form>
+        <div class="progress mt-3">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" id="progressBar">0%</div>
+        </div>
+        <div id="result" class="mt-5"></div>
+        <div id="detected-text" class="mt-5"></div>
+        <div id="audio-container" class="text-center mt-5">
+          <audio id="audioPlayer" controls style="margin-top: 20px;"></audio>
+        </div>
+        <textarea id="copyText" readonly></textarea>
+        <div id="downloadLinks" class="mt-5 text-center"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('uploadForm');
+      const fileInput = document.getElementById('file');
+      const dropZone = document.getElementById('drop-zone');
+      const imagePreview = document.getElementById('imagePreview');
+      const audioPlayer = document.getElementById('audioPlayer');
+      const resultDiv = document.getElementById('result');
+      const textDiv = document.getElementById('detected-text');
+      const progressBar = document.getElementById('progressBar');
+      const progressContainer = document.querySelector('.progress');
+      const copyText = document.getElementById('copyText');
+      const downloadLinks = document.getElementById('downloadLinks');
+
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('hover');
+      });
+
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('hover');
+        const files = e.dataTransfer.files;
+        fileInput.files = files;
+        previewFiles(files);
+      });
+
+      fileInput.addEventListener('change', function() {
+        previewFiles(this.files);
+      });
+
+      function previewFiles(files) {
+        imagePreview.innerHTML = '';
+        Array.from(files).forEach(file => {
+          if (!file.type.includes('pdf')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.classList.add('img-fluid');
+              imagePreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
+
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) {
+            progressContainer.style.display = 'block'; // Progress bar'ı görünür yap
+            const percentComplete = (e.loaded / e.total) * 100;
+            progressBar.style.width = percentComplete + '%';
+            progressBar.textContent = Math.round(percentComplete) + '%';
+          }
+        });
+
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.processed_image_url) {
+              resultDiv.innerHTML = `<img src="${response.processed_image_url}" alt="Processed Image" class="img-fluid"/>`;
+
+              textDiv.innerHTML = '<h3>Algılanan metin:</h3><ul>' + response.detected_text.map(text => `<li>${text}</li>`).join('') + '</ul>';
+              copyText.value = response.detected_text.join('\n');
+
+              if (response.audio_file_url) {
+                const audioUrl = `${response.audio_file_url}?t=${new Date().getTime()}`;
+                audioPlayer.src = audioUrl;
+                audioPlayer.style.display = 'block';
+                audioPlayer.load();
+              }
+
+              downloadLinks.innerHTML = `
+                <a href="${response.processed_image_url}" download class="btn btn-secondary mt-3">İşlenmiş Görüntüyü İndir</a>
+                <a href="${response.audio_file_url}" download class="btn btn-secondary mt-3">Sesi İndir</a>
+              `;
+            } else if (response.error) {
+              alert('Hata: ' + response.error);
+            } else {
+              alert('Resim işlenirken hata oluştu.');
+            }
+          } else {
+            alert('Resim yüklenirken hata oluştu.');
+          }
+          progressBar.style.width = '0%';
+          progressBar.textContent = '0%';
+          progressContainer.style.display = 'none'; // İşlem tamamlandığında progress bar'ı gizle
+        };
+
+        xhr.send(formData);
+      });
+    });
+  </script>
+</body>
+</html>

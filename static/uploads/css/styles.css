@@ -1,0 +1,132 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-control-file {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.btn-primary {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 1.25rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: .25rem;
+    cursor: pointer;
+    transition: background-color .3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+#result {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#detected-text {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#detected-text h3 {
+    color: #333;
+}
+
+#detected-text ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#detected-text li {
+    background-color: #f8f9fa;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+#audio-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.progress {
+    height: 20px;
+    display: none; /* Başlangıçta gizli olacak */
+}
+
+.progress-bar {
+    line-height: 20px;
+}
+
+#imagePreview img {
+    max-width: 100%;
+    height: auto;
+}
+
+#copyText {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    margin-top: 20px;
+}
+
+#drop-zone {
+    border: 2px dashed #007bff;
+    padding: 20px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+#drop-zone.hover {
+    border-color: #0056b3;
+}
+
+#drop-zone p {
+    margin: 0;
+    font-size: 16px;
+    color: #007bff;
+}
