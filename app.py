@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
+from flask import Flask, request, jsonify, url_for
 import os
-from flask import Flask, request, redirect, url_for, render_template, jsonify
 import cv2
 import easyocr
 from gtts import gTTS
 from werkzeug.utils import secure_filename
 from pdf2image import convert_from_path
 import numpy as np
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -16,7 +17,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return "Flask OCR API is running!"
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -67,8 +68,8 @@ def upload_file():
 
         response = {
             'detected_text': detected_text,
-            'audio_file_url': url_for('static', filename='uploads/detected_text.mp3'),
-            'processed_image_url': url_for('static', filename='uploads/' + processed_image_filename)
+            'audio_file_url': url_for('static', filename='uploads/detected_text.mp3', _external=True),
+            'processed_image_url': url_for('static', filename='uploads/' + processed_image_filename, _external=True)
         }
 
         return jsonify(response)
